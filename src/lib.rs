@@ -23,6 +23,53 @@ We try to adhere to the graph terminology as closely as possible, using vertex a
 
 */
 
+use std::collections::{HashSet, HashMap};
+use std::hash::Hash;
+use std::vec::IntoIter;
+
+pub struct HashVertexSet<V: Hash + Eq> {
+    set: HashSet<V>
+}
+
+impl <V: Hash + Eq> VertexSet<V> for HashVertexSet<V> {
+
+    fn contains(&self, vertex: &V) -> bool {
+        return self.set.contains(vertex);
+    }
+
+    fn is_empty(&self) -> bool {
+        return self.set.is_empty();
+    }
+
+    fn insert(&mut self, vertex: V) -> bool {
+        return self.set.insert(vertex);
+    }
+}
+
+pub struct SimpleGraph {
+    vertices: HashSet<String>,
+    successors: HashMap<String, Vec<String>>,
+    predecessors: HashMap<String, Vec<String>>
+}
+
+impl EvolutionOperator<String> for SimpleGraph {
+    type Iterator = IntoIter<String>;
+
+    fn next(&self, source: &String) -> Self::Iterator {
+        return self.successors.get(source).unwrap().clone().into_iter()
+    }
+}
+
+pub struct SimpleGraphAlgorithms;
+
+impl GraphAlgorithms<SimpleGraph, String> for SimpleGraphAlgorithms {
+    type Set = HashVertexSet<String>;
+
+    fn new_vertex_set(graph: &SimpleGraph) -> Self::Set {
+        return HashVertexSet { set: HashSet::new() }
+    }
+}
+
 pub trait VertexSet<V> {
     fn contains(&self, vertex: &V) -> bool;
     fn is_empty(&self) -> bool;
@@ -33,6 +80,7 @@ pub trait EvolutionOperator<V> {
     type Iterator : Iterator<Item=V>;
 
     fn next(&self, source: &V) -> Self::Iterator;
+    //fn next_ref(&self, source: &V) -> &Self::Iterator;
 }
 
 pub trait GraphAlgorithms<G, V> where V: Clone, G: EvolutionOperator<V> {
@@ -56,7 +104,7 @@ pub trait GraphAlgorithms<G, V> where V: Clone, G: EvolutionOperator<V> {
                 stack.pop();
             }
         }
-        unimplemented!()
+        return result;
     }
 
 }
