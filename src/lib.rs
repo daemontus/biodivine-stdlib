@@ -23,6 +23,9 @@ We try to adhere to the graph terminology as closely as possible, using vertex a
 
 */
 
+mod graph;
+mod set;
+
 use std::collections::{HashSet, HashMap};
 use std::hash::Hash;
 use std::vec::IntoIter;
@@ -111,8 +114,53 @@ pub trait GraphAlgorithms<G, V> where V: Clone, G: EvolutionOperator<V> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
     fn it_works() {
-        assert_eq!(2 + 2, 4);
+        let mut vertices: HashSet<String> = HashSet::new();
+        vertices.insert("A".to_string());
+        vertices.insert("B".to_string());
+        vertices.insert("C".to_string());
+
+        let succ_a = vec!["B".to_string()];
+        let succ_b = vec!["C".to_string()];
+        let succ_c = vec!["C".to_string()];
+        let pred_a = vec![];
+        let pred_b = vec!["A".to_string()];
+        let pred_c = vec!["C".to_string()];
+
+        let mut successors = HashMap::new();
+        successors.insert("A".to_string(), succ_a);
+        successors.insert("B".to_string(), succ_b);
+        successors.insert("C".to_string(), succ_c);
+
+        let mut predecessors = HashMap::new();
+        predecessors.insert("A".to_string(), pred_a);
+        predecessors.insert("B".to_string(), pred_b);
+        predecessors.insert("C".to_string(), pred_c);
+
+        let graph = SimpleGraph {
+            vertices,
+            successors,
+            predecessors
+        };
+
+        let reach_from_a = SimpleGraphAlgorithms::reachable_states(&graph, &"A".to_string());
+        let reach_from_b = SimpleGraphAlgorithms::reachable_states(&graph, &"B".to_string());
+        let reach_from_c = SimpleGraphAlgorithms::reachable_states(&graph, &"C".to_string());
+
+        assert!(reach_from_a.contains(&"A".to_string()));
+        assert!(reach_from_a.contains(&"B".to_string()));
+        assert!(reach_from_a.contains(&"C".to_string()));
+
+        assert!(!reach_from_b.contains(&"A".to_string()));
+        assert!(reach_from_b.contains(&"B".to_string()));
+        assert!(reach_from_b.contains(&"C".to_string()));
+
+        assert!(!reach_from_c.contains(&"A".to_string()));
+        assert!(!reach_from_c.contains(&"B".to_string()));
+        assert!(reach_from_c.contains(&"C".to_string()));
+
     }
 }
